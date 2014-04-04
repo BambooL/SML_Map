@@ -1,0 +1,117 @@
+(****************************************************)
+
+(* Mini-Project 1
+ *
+ * IST 402 Programming Languages
+ *
+ * Author: Hsyao Liu
+ *)
+
+(****************************************************)
+
+(*Requirements*)
+
+(* polymorphic mapping *)
+
+(* 
+A mapping is a collection of tuples like <key,val>;
+that is, it maps a key to a value.
+Implement the following polymorphic mapping in ML.
+The current implementation of functions:
+ insert
+ lookup
+ remove
+ union
+ intersect
+ filter
+return wrong results, but with correct type.
+Replace "EmptyMap" with your implementation
+*)
+
+(****************************************************)
+
+(*KEY*)
+
+signature KEY =
+sig
+  type key;
+  val equal : key * key -> bool
+end
+
+structure IntKey : KEY =
+struct
+  type key = int
+  fun equal(e1,e2) = (e1=e2)
+end
+
+(*Map*)
+
+signature MAP =
+sig
+  structure Key : KEY;
+  type key;
+  sharing type key = Key.key;
+  type 'value map;
+  val EmptyMap : 'value map;
+  val insert : (key * 'value) -> 'value map -> 'value map;
+  val lookup : key -> 'value map ->  'value option;
+  val remove : key -> 'value map -> 'value map;
+  val union : 'value map -> 'value map -> 'value map;
+  val intersect : 'value map -> 'value map -> 'value map;
+  val filter : (key -> bool) -> 'value map -> 'value map 
+end
+
+structure Map : MAP =
+struct
+  structure Key = IntKey;
+  type key = Key.key;
+  type 'value map = (key * 'value) list;
+  val EmptyMap = nil;
+
+  (*Concatenate the two lists*)
+  fun insert (k,v) m = [(k, v)] @ m
+
+  (*Recursively compare the key with the first key in the Map*)
+  fun lookup k m = case m of
+      	       	   [] => NONE
+                   | (hdkey,hdvalue)::tl => 
+		     if (Key.equal(hdkey, k)) then SOME hdvalue else lookup k tl
+
+  (*Recursively compare the key with the first key in the map, if same, remove it*)
+  fun remove k m = case m of
+                   [] => nil
+                   | (hdkey,hdvalue)::tl => 
+		     if (Key.equal(hdkey, k)) then tl else (hdkey, hdvalue)::remove k tl
+  										    
+  (*Concatenate the two maps and remove the repeated tuples*)
+  fun union m1 m2 = let fun search k m = case m of
+      	       	   [] => false
+                   | (hdkey,hdvalue)::tl1 => if (Key.equal(hdkey, k)) then true else search k tl1
+		   in
+     		     let fun delete m = case m of
+		     [] => nil
+		     | (hdkey, hdvalue)::tl2 => if (search hdkey tl2) then delete tl2 else (hdkey, hdvalue)::delete tl2
+		     in
+		       delete (m1 @ m2)
+		     end
+ 		   end
+
+ 		   
+  (*Recursively search keys in m2 with the keys occur in m1*)
+  fun intersect m1 m2 = let fun search k m = case m of
+      	       	   [] => nil
+                   | (hdkey, hdvalue)::tl => if (Key.equal(hdkey, k)) then [(hdkey, hdvalue)] else search k tl
+                   in
+		    case m1 of
+		    [] => nil
+		    | (hdkey, hdvalue)::tl => (search hdkey m2) @ (intersect tl m2)
+		   end
+
+  (*Recursively apply the filter function with the first key*)
+  fun filter f m = case m of
+                   [] => nil
+                   | (hdkey,hdvalue)::tl => if (f hdkey) then filter f tl else (hdkey, hdvalue)::filter f tl
+
+
+  end
+(****************************************************)

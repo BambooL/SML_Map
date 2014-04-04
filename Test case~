@@ -1,0 +1,15 @@
+Test Case:
+
+val s1= Map.insert (1,"Alice") [(2,"Bob"),(3,"Cat")];
+
+val s2= Map.lookup (1,"Alice") [(1,"Alice"),(2,"Bob"),(3,"Cat")];
+
+val s3= Map.remove (1,"Alice") [(1,"Alice"),(2,"Bob"),(3,"Cat")];
+
+val s4= Map.intersect [(1,"Alice"),(2,"Bob"),(3,"Cat"),(4,"Jiang Ming"),(5,"Xiao Liu")] [(1,"Alice"),(2,"Bob"),(3,"Cat"),(4,"Ming Jiang"),(5,"Dongpeng Xu")];
+
+val s5= Map.union  [(1,"Alice"),(2,"Bob"),(3,"Cat")] [(4,"Jiang Ming"),(5,"Xiao Liu"),(6,"Dongpeng Xu")];
+
+fun filterout x = if (x<1) then true else false;
+
+val s= Map.filter filterout 1 s5
